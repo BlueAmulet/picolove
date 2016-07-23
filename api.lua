@@ -63,8 +63,14 @@ function api.clip(x, y, w, h)
 	end
 end
 
-function api.cls()
-	love.graphics.clear(0, 0, 0, 255)
+function api.cls(c)
+	if c == nil then
+		pico8.clsc = {0, 0, 0, 255}
+	else
+		pico8.clsc = pico8.palette[c+1]
+	end
+
+	love.graphics.clear(pico8.clsc)
 	pico8.cursor={0, 0}
 end
 
