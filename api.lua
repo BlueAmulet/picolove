@@ -169,7 +169,7 @@ function api.rect(x0, y0, x1, y1, col)
 	if w==0 or h==0 then
 		love.graphics.rectangle("fill", flr(x0), flr(y0), w+1, h+1)
 	else
-		love.graphics.rectangle("line", flr(x0)+1, flr(y0)+1, w, h)
+		love.graphics.rectangle("line", flr(x0)+1, flr(y0), w, h)
 	end
 end
 
