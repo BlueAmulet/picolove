@@ -681,11 +681,11 @@ function api.cstore(dest_addr, source_addr, len)
 end
 
 function api.rnd(x)
-	return math.random()*(x or 1)
+	return love.math.random(x or 1)
 end
 
 function api.srand(seed)
-	return math.random(flr(seed*0x10000))
+	love.math.setRandomSeed(flr(seed*0x10000))
 end
 
 api.flr=math.floor
