@@ -30,6 +30,10 @@ end
 
 local api={}
 
+function api.printh(text)
+	print(text)
+end
+
 function api.flip()
 	flip_screen()
 	love.timer.sleep(1/pico8.fps)
