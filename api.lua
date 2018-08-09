@@ -1097,6 +1097,9 @@ function api.holdframe()
 	-- TODO: Implement this
 end
 
+function api.menuitem()
+end
+
 api.sub=string.sub
 api.pairs=pairs
 api.type=type
