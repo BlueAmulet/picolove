@@ -141,9 +141,10 @@ function _load(filename)
 	for i=0, 0x1c00-1 do
 		pico8.usermemory[i]=0
 	end
-	for i=0, 63 do
+	for i=1, 64 do
 		pico8.cartdata[i]=0
 	end
+	pico8.cart_id=false
 	if pico8.cart._init then pico8.cart._init() end
 	if pico8.cart._update60 then
 		setfps(60)

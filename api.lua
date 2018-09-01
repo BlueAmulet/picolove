@@ -637,7 +637,7 @@ function api.peek(addr)
 	elseif addr<0x5e00 then
 		return pico8.usermemory[addr-0x4300]
 	elseif addr<0x5f00 then
-		local val=pico8.cartdata[math.floor((addr-0x5e00)/4)]*0x10000
+		local val=api.dget(math.floor((addr-0x5e00)/4))*0x10000
 		local shift=(addr%4)*8
 		return bit.rshift(bit.band(val, bit.lshift(0xFF, shift)), shift)
 	elseif addr<0x5f80 then
@@ -724,9 +724,9 @@ function api.poke(addr, val)
 		pico8.usermemory[addr-0x4300]=val
 	elseif addr<0x5f00 then
 		local ind=math.floor((addr-0x5e00)/4)
-		local oval=pico8.cartdata[ind]*0x10000
+		local oval=api.dget(ind)*0x10000
 		local shift=(addr%4)*8
-		pico8.cartdata[ind]=bit.bor(bit.band(oval, bit.bnot(bit.lshift(0xFF, shift))), bit.lshift(val, shift))/0x10000
+		api.dset(ind, bit.bor(bit.band(oval, bit.bnot(bit.lshift(0xFF, shift))), bit.lshift(val, shift))/0x10000)
 	elseif addr<0x5f80 then
 		-- FIXME: Draw state
 	elseif addr<0x5fc0 then
@@ -1022,24 +1022,64 @@ function api.btnp(i, p)
 end
 
 function api.cartdata(id)
+	if pico8.cart_id then
+		warning("cartdata() can only be called once")
+		return false
+	end
+	local filename=id..".lua"
+	if love.filesystem.getInfo(filename, "file") then
+		local data=love.filesystem.read(filename)
+		pico8.cartdata={love.data.unpack("f", data)}
+	else
+		local file=love.filesystem.newFile(filename)
+		local ok,err=file:open("w")
+		if not ok then
+			error(err)
+		end
+		local data=love.data.pack("string", "f", unpack(pico8.cartdata))
+		ok,err=love.filesystem.write(filename, data)
+		if not ok then
+			error(err)
+		end
+	end
+	pico8.cart_id=id
+	return true
 end
 
 function api.dget(index)
-	index=flr(index)
-	if index<0 or index>63 then
-		warning('cartdata index out of range')
-		return
+	index=index+1
+	if not pico8.cart_id then
+		error('** dget called before cartdata()')
 	end
+	index=flr(index)
+	if index<1 or index>64 then
+		warning('cartdata index out of range')
+		return 0
+	end
+	local data,err=love.filesystem.read(pico8.cart_id..".lua")
+	if not data then
+		error(err)
+	end
+	pico8.cartdata={love.data.unpack("f", data)}
 	return pico8.cartdata[index]
 end
 
 function api.dset(index, value)
+	index=index+1
+	if not pico8.cart_id then
+		error('** dset called before cartdata()')
+	end
 	index=flr(index)
-	if index<0 or index>63 then
+	if index<1 or index>64 then
 		warning('cartdata index out of range')
-		return
+		return 0
 	end
 	pico8.cartdata[index]=value
+	local data=love.data.pack("string", "f" ,unpack(pico8.cartdata))
+	local ok,err=love.filesystem.write(pico8.cart_id..".lua", data)
+	if not ok then
+		error(err)
+	end
 end
 
 local tfield={[0]="year", "month", "day", "hour", "min", "sec"}
